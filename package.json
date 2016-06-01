@@ -18,5 +18,13 @@
   "bugs": {
     "url": "https://github.com/sparetire/wechat-project/issues"
   },
-  "homepage": "https://github.com/sparetire/wechat-project#readme"
+  "homepage": "https://github.com/sparetire/wechat-project#readme",
+  "devDependencies": {
+    "eslint": "^2.11.1",
+    "js-beautify": "^1.6.2"
+  },
+  "dependencies": {
+    "koa": "^1.2.0",
+    "sha1": "^1.1.1"
+  }
 }
