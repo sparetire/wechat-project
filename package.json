@@ -1,0 +1,22 @@
+{
+  "name": "wechat-project",
+  "version": "1.0.0",
+  "description": "A magic research project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sparetire/wechat-project.git"
+  },
+  "keywords": [
+    "magic"
+  ],
+  "author": "Kaguya & Sparetire",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sparetire/wechat-project/issues"
+  },
+  "homepage": "https://github.com/sparetire/wechat-project#readme"
+}
