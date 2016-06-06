@@ -4,8 +4,20 @@
 // 带查询字符串的，但method为POST的，查询字符串会被忽略
 // URL对象见https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost
 var wechatAPIs = {
+	// accessToken: {
+	// 	href: '',
+	// 	method: 'GET'
+	// }
+	// defaultHost: 'www.chetong.net',
+	fuck: {
+		href: 'http://www.chetong.net/api/check/usertype',
+		pathname: '/api/check/usertype',
+		method: 'post'
+	},
 	accessToken: {
-		href: '',
-		method: 'GET'
+		href: 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential',
+		method: 'get'
 	}
 };
+
+module.exports = wechatAPIs;

@@ -31,11 +31,15 @@ function APIObject(opts) {
 		self.method = typeof opts.method === 'string' ? opts.method.toUpperCase() :
 			APIObject.GET;
 		var temp = URL.parse(self.url);
-		if (self.method === APIObject.POST && !util.isEmptyStr(temp.search)) {
+		if (self.method === APIObject.POST && !util.isNullStrOrNull(temp.search)) {
 			self.url = self.url.slice(0, self.url.indexOf('?'));
 		}
 		if (self.method === APIObject.POST) {
-			opts.type = opts.type.toUpperCase();
+			if (util.isNullOrUndefined(opts.type)) {
+				opts.type = APIObject.JSON;
+			} else if (typeof opts.type === 'string') {
+				opts.type = opts.type.toUpperCase();
+			}
 			if (opts.type != null && opts.type != APIObject.JSON && opts.type !=
 				APIObject.FORM) {
 				throw new Error('Unkown property value: ' + opts.type +
@@ -52,7 +56,8 @@ function APIObject(opts) {
 
 	// 生成请求方法,名字是get或post,支持回调也支持返回Promise
 	if (typeof this.get != 'function') {
-		APIObject.prototype.get = () => {
+		// 我一个喜欢装逼的人怎么会不用lambda表达式？因为这里有个坑。。
+		APIObject.prototype.get = function () {
 			if (this.method != APIObject.GET && this.method != APIObject.ALL) {
 				throw new Error('This API only support GET method.');
 			}
@@ -74,13 +79,12 @@ function APIObject(opts) {
 
 			// 带参,是查询字符串
 			if (typeof opts === 'string') {
-				this.url = this.url.indexOf('&') === -1 ? this.url + '?' + encodeURI(opts) :
+				this.url = this.url.indexOf('?') === -1 ? this.url + '?' + encodeURI(opts) :
 					this.url + '&' + encodeURI(opts);
 				// 带参,是请求参数对象不是http设置对象
 			} else if (util.isObject(opts) && !flag) {
-				this.url = this.url.indexOf('&') === -1 ? this.url + QueryString.stringify(
-						opts) : this.url + '&' + QueryString.stringify(opts)
-					.slice(1);
+				this.url = this.url.indexOf('?') === -1 ? this.url + QueryString.stringify(
+					opts) : this.url + '&' + QueryString.stringify(opts);
 			} else if (!util.isNullOrUndefined(opts)) {
 				throw new Error('Please set right options.');
 			}
@@ -95,22 +99,24 @@ function APIObject(opts) {
 				opts.method = APIObject.GET;
 				opts.url = this.url;
 				return new Promise((resolve, reject) => {
-					request(opts, (err, resp, body) => {
+					request(opts, function (err, resp, body) {
+						var arr = Array.prototype.slice.call(arguments, 0);
 						if (err) {
-							reject(arguments);
+							reject(arr);
 						} else {
-							resolve(arguments);
+							resolve(arr);
 						}
 					});
 				});
 			} else if (!callback && !flag) {
 				var url = this.url;
 				return new Promise((resolve, reject) => {
-					request(url, (err, resp, body) => {
+					request(url, function (err, resp, body) {
+						var arr = Array.prototype.slice.call(arguments, 0);
 						if (err) {
-							reject(arguments);
+							reject(arr);
 						} else {
-							resolve(arguments);
+							resolve(arr);
 						}
 					});
 				});
@@ -121,7 +127,7 @@ function APIObject(opts) {
 
 
 	if (typeof this.post != 'function') {
-		APIObject.prototype.post = () => {
+		APIObject.prototype.post = function () {
 			if (this.method != APIObject.POST && this.method != APIObject.ALL) {
 				throw new Error('This API only support POST method.');
 			}
@@ -163,7 +169,7 @@ function APIObject(opts) {
 			} else if (util.isObject(opts) && opts.type === APIObject.FORM && !flag) {
 				requestParam.json = false;
 				requestParam.form = QueryString.stringify(opts);
-			} else if (!util.isNullOrUndefined(opts)) {
+			} else if (!util.isNullOrUndefined(opts) && !flag) {
 				throw new Error('Please set right options.');
 			}
 
@@ -179,21 +185,23 @@ function APIObject(opts) {
 				opts.method = APIObject.POST;
 				opts.url = this.url;
 				return new Promise((resolve, reject) => {
-					request(opts, (err, resp, body) => {
+					request(opts, function (err, resp, body) {
+						var arr = Array.prototype.slice.call(arguments, 0);
 						if (err) {
-							reject(arguments);
+							reject(arr);
 						} else {
-							resolve(arguments);
+							resolve(arr);
 						}
 					});
 				});
 			} else if (!callback && !flag) {
 				return new Promise((resolve, reject) => {
-					request(requestParam, (err, resp, body) => {
+					request(requestParam, function (err, resp, body) {
+						var arr = Array.prototype.slice.call(arguments, 0);
 						if (err) {
-							reject(arguments);
+							reject(arr);
 						} else {
-							resolve(arguments);
+							resolve(arr);
 						}
 					});
 				});
@@ -209,19 +217,22 @@ APIObject.parse = (opts, defaultHost) => {
 		throw new Error('APIObject.parse expect an object, but get a parameter: ' +
 			opts);
 	}
-	if (typeof defaultHost === 'string' && !util.isNullStrOrNull(opts.href) && !
-		util.isNullStrOrNull(opts.host) && !util.isNullStrOrNull(opts.hostname)) {
+	if (typeof defaultHost === 'string' && util.isNullStrOrNull(opts.href) &&
+		util.isNullStrOrNull(opts.host) && util.isNullStrOrNull(opts.hostname)) {
 		if (defaultHost.indexOf(':') != -1) {
+			opts.protocol = typeof opts.protocol === 'string' ? opts.protocol : 'http:';
 			opts.host = defaultHost;
 		} else {
+			opts.protocol = typeof opts.protocol === 'string' ? opts.protocol : 'http:';
 			opts.hostname = defaultHost;
 		}
-	} else if (util.isNullStrOrNull(defaultHost) && !util.isNullStrOrNull(opts.href) &&
-		!util.isNullStrOrNull(opts.host) && !util.isNullStrOrNull(opts.hostname)) {
+	} else if (util.isNullStrOrNull(defaultHost) && util.isNullStrOrNull(opts.href) &&
+		util.isNullStrOrNull(opts.host) && util.isNullStrOrNull(opts.hostname)) {
 		throw new Error('You must set a host for api config.');
 	}
 
 	var apiObj = {
+		url: '',
 		method: opts.method,
 		type: opts.type
 	};

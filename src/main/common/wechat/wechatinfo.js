@@ -1,4 +1,4 @@
-var util = require('./util');
+var util = require('../util');
 var WeChatInfo = (function () {
 	// 作为类变量/静态变量防止暴露
 	var instance = null,
@@ -69,14 +69,3 @@ var WeChatInfo = (function () {
 })();
 
 module.exports = WeChatInfo;
-
-// var b = WeChatInfo.getInstance({
-// 	token: 'abc',
-// 	appid: '123',
-// 	appSecret: 'lkjadfs',
-// 	encodingAESKey: 'aldgfkj'
-// });
-// b.instance = null;
-// var a = WeChatInfo.getInstance();
-// console.log(b);
-// console.log(a);
