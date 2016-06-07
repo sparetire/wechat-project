@@ -4,7 +4,7 @@
 // 确保对象不为null，在没有配置默认主机的情况下确保对象至少有协议头，主机
 // 如果没有主机，用默认主机 *
 // 默认主机host可以配置 *
-// 最终得到URL和method *
+// 最终得到URL, type和method *
 
 // 为每个对象生成一个请求方法，请求方法是Promise *
 // 请求方法根据对象的method决定接受的参数 *
@@ -18,6 +18,7 @@ var QueryString = require('querystring');
 var URL = require('url');
 
 
+// 接受一个对象，带有url，method和type属性，method和type为可选，默认GET和JSON
 function APIObject(opts) {
 	var self = this instanceof APIObject ? this : Object.create(APIObject.prototype);
 	if (!util.isObjectOrNull(opts)) {
@@ -55,6 +56,16 @@ function APIObject(opts) {
 
 
 	// 生成请求方法,名字是get或post,支持回调也支持返回Promise
+	// 接受一个配置对象，一个布尔值flag和一个回调函数callback
+	// 如果flag为true，表明配置对象是包含http设置信息的
+	// 否则对象只作为get post的请求参数
+	// 如果对象只作为请求参数，对象会被序列化成get的查询字符串或者post的body
+	// 如果对象是一个字符串，则作为get的查询字符串或者post的body
+	// 如果存在callback参数，则请求函数不返回Promise
+	// 否则返回一个Promise
+	// 对于get方法，三个属性都是可选
+	// post必须要有一个请求参数即body
+	// APIObject的url,method,type应该是只读
 	if (typeof this.get != 'function') {
 		// 我一个喜欢装逼的人怎么会不用lambda表达式？因为这里有个坑。。
 		APIObject.prototype.get = function () {
@@ -209,9 +220,31 @@ function APIObject(opts) {
 
 		};
 	}
+
+	// 修改属性只读
+	Object.defineProperties(self, {
+		url: {
+			configurable: false,
+			writable: false
+		},
+		method: {
+			configurable: false,
+			writable: false
+		},
+		type: {
+			configurable: false,
+			writable: false
+		}
+	});
+
 	return self;
 }
 
+// 接受一个扩展到URL对象和一个默认host作为参数
+// URL对象为必需，默认host为可选
+// 函数会将一个URL对象进行处理得到一个url字符串
+// 输出一个APIObject接受的对象
+// 带有url，method和type三个属性
 APIObject.parse = (opts, defaultHost) => {
 	if (!util.isObject(opts)) {
 		throw new Error('APIObject.parse expect an object, but get a parameter: ' +
