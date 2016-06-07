@@ -74,7 +74,8 @@ function APIObject(opts) {
 			}
 			var opts = null,
 				callback = null,
-				flag = null;
+				flag = null,
+				requestURL = this.url;
 
 			for (var key in arguments) {
 				if (typeof arguments[key] === 'function') {
@@ -90,25 +91,27 @@ function APIObject(opts) {
 
 			// 带参,是查询字符串
 			if (typeof opts === 'string') {
-				this.url = this.url.indexOf('?') === -1 ? this.url + '?' + encodeURI(opts) :
+				// url不能修改，不然对同一个api调用多次会导致url一直变长
+				requestURL = this.url.indexOf('?') === -1 ? this.url + '?' + encodeURI(
+						opts) :
 					this.url + '&' + encodeURI(opts);
 				// 带参,是请求参数对象不是http设置对象
 			} else if (util.isObject(opts) && !flag) {
-				this.url = this.url.indexOf('?') === -1 ? this.url + QueryString.stringify(
+				requestURL = this.url.indexOf('?') === -1 ? this.url + QueryString.stringify(
 					opts) : this.url + '&' + QueryString.stringify(opts);
 			} else if (!util.isNullOrUndefined(opts)) {
 				throw new Error('Please set right options.');
 			}
 
 			if (callback && !flag) {
-				request(this.url, callback);
+				request(requestURL, callback);
 			} else if (callback && flag && util.isObject(opts)) {
 				opts.method = APIObject.GET;
-				opts.url = this.url;
+				opts.url = requestURL;
 				request(opts, callback);
 			} else if (!callback && flag && util.isObject(opts)) {
 				opts.method = APIObject.GET;
-				opts.url = this.url;
+				opts.url = requestURL;
 				return new Promise((resolve, reject) => {
 					request(opts, function (err, resp, body) {
 						var arr = Array.prototype.slice.call(arguments, 0);
@@ -120,7 +123,7 @@ function APIObject(opts) {
 					});
 				});
 			} else if (!callback && !flag) {
-				var url = this.url;
+				var url = requestURL;
 				return new Promise((resolve, reject) => {
 					request(url, function (err, resp, body) {
 						var arr = Array.prototype.slice.call(arguments, 0);
