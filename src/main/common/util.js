@@ -28,6 +28,9 @@ var util = {
 	// 是否是对象或null或undefined
 	isObjectOrNull: function (obj) {
 		return obj === undefined || typeof obj === 'object';
+	},
+	isFunction: function (obj) {
+		return typeof obj === 'function';
 	}
 };
 

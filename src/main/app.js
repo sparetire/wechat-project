@@ -1,5 +1,5 @@
-var koa = require('koa');
-var sha1 = require('sha1');
+const koa = require('koa');
+const sha1 = require('sha1');
 
 const app = new koa();
 

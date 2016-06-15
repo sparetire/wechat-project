@@ -1,5 +1,5 @@
 // API配置文件可以有多份，作为不同业务的API配置
-// 配置文件中每一项都是一个扩展的URL对象,多了一个method属性和一个type属性,
+// 配置文件中每一项都是一个扩展的URL对象,多了一个method属性一个restful属性和一个type属性,
 // type的值有json和form,大小写随意
 // method可以是GET，POST，ALL，大小写随意
 // 带查询字符串的，但method为POST的，查询字符串会被忽略
@@ -23,6 +23,11 @@ var wechatAPIs = {
 	accessToken: {
 		href: 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential',
 		method: 'get'
+	},
+	rest: {
+		href: 'http://www.aaa.com/{name}/{password}',
+		method: 'get',
+		restful: true
 	}
 };
 

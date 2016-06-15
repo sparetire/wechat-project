@@ -11,14 +11,22 @@
 // POST方法接受字符串，对象，Form对象，对象都会被序列化，对象的方法会被去掉 *
 // GET方法接受字符串，字符串被作为查询字符串拼接到URL，对象，对象的方法会被去掉，对象被序列化成查询字符串 *
 
-var util = require('./util');
-var request = require('request');
-var Promise = require('bluebird');
-var QueryString = require('querystring');
-var URL = require('url');
+const util = require('./util');
+const request = require('request');
+const Promise = require('bluebird');
+const QueryString = require('querystring');
+const URL = require('url');
 
 
-// 接受一个对象，带有url，method和type属性，method和type为可选，默认GET和JSON
+// 接受一个对象，带有url，method，restful和type属性，method，restful和type为可选，默认GET和JSON
+// 暴露属性url，method，type，restful，都是只读，restful的值有true,false
+// method的值有"GET"，"POST"，"ALL"，type的值有"JSON"，"FORM"，
+// 暴露方法get和post，都接受三个参数，
+// 一个请求参数options，options可以是对象也可以是字符串，
+// 对于get，options是可选的，如果是字符串则作为查询字符串，如果是对象则被序列化成查询字符串，
+// 对于post，options是必需的，如果是字符串，则作为body，如果是对象，则根据type的值被序列化成json或者form字符串，默认json，
+// 一个标记flag，可选，默认false，如果为true，则options必填，options作为http的配置对象，其中method和url会被忽略
+// 一个回调函数callback，可选，callback有三个参数，err，resp，body，同request库的callback，如果不传入callback，则get或post是promise函数
 function APIObject(opts) {
 	var self = this instanceof APIObject ? this : Object.create(APIObject.prototype);
 	if (!util.isObjectOrNull(opts)) {
@@ -32,9 +40,11 @@ function APIObject(opts) {
 		self.method = typeof opts.method === 'string' ? opts.method.toUpperCase() :
 			APIObject.GET;
 		var temp = URL.parse(self.url);
+		// 忽略POST方法的url的查询字符串
 		if (self.method === APIObject.POST && !util.isNullStrOrNull(temp.search)) {
 			self.url = self.url.slice(0, self.url.indexOf('?'));
 		}
+		// 为POST设置默认body类型为json
 		if (self.method === APIObject.POST) {
 			if (util.isNullOrUndefined(opts.type)) {
 				opts.type = APIObject.JSON;
@@ -47,6 +57,22 @@ function APIObject(opts) {
 					'. Type must be JSON or FORM.');
 			}
 			self.type = opts.type ? opts.type : APIObject.JSON;
+		}
+		// 为GET设置默认restful为false
+		if (self.method === APIObject.GET) {
+			if (util.isNullOrUndefined(opts.restful)) {
+				self.restful = APIObject.NO_REST;
+			} else if (typeof opts.restful != 'boolean') {
+				throw new Error(
+					'The type of property restful must be boolean, but get a value: ' + opts.restful
+				);
+			} else {
+				self.restful = opts.restful;
+			}
+			// 对带有查询字符串的REST接口报错，这里和之前POST的处理有些不一致就是
+			if (self.restful && self.url.indexOf('?') != -1) {
+				throw new Error('An RESTFUL API can\'t have query string in URL.');
+			}
 		}
 	} else {
 		self.url = '';
@@ -66,7 +92,7 @@ function APIObject(opts) {
 	// 对于get方法，三个属性都是可选
 	// post必须要有一个请求参数即body
 	// APIObject的url,method,type应该是只读
-	if (typeof this.get != 'function') {
+	if (!util.isFunction(this.get)) {
 		// 我一个喜欢装逼的人怎么会不用lambda表达式？因为这里有个坑。。
 		APIObject.prototype.get = function () {
 			if (this.method != APIObject.GET && this.method != APIObject.ALL) {
@@ -78,9 +104,9 @@ function APIObject(opts) {
 				requestURL = this.url;
 
 			for (var key in arguments) {
-				if (typeof arguments[key] === 'function') {
+				if (util.isFunction(arguments[key])) {
 					callback = arguments[key];
-				} else if (typeof arguments[key] === 'object' || typeof arguments[key] ===
+				} else if (util.isObject(arguments[key]) || typeof arguments[key] ===
 					'string') {
 					opts = arguments[key];
 				} else if (typeof arguments[key] === 'boolean') {
@@ -95,6 +121,15 @@ function APIObject(opts) {
 				requestURL = this.url.indexOf('?') === -1 ? this.url + '?' + encodeURI(
 						opts) :
 					this.url + '&' + encodeURI(opts);
+				// 带参,是restful api请求对象
+			} else if (util.isObject(opts) && !flag && this.restful) {
+				var reg = /{(\w+)}/g;
+				requestURL = this.url.replace(reg, (m, v) => {
+					if (util.isNullOrUndefined(opts[v])) {
+						throw new Error('The parameter doesn\'t have an property named ' + v);
+					}
+					return opts[v];
+				});
 				// 带参,是请求参数对象不是http设置对象
 			} else if (util.isObject(opts) && !flag) {
 				requestURL = this.url.indexOf('?') === -1 ? this.url + QueryString.stringify(
@@ -102,6 +137,8 @@ function APIObject(opts) {
 			} else if (!util.isNullOrUndefined(opts)) {
 				throw new Error('Please set right options.');
 			}
+
+			console.log(requestURL);
 
 			if (callback && !flag) {
 				request(requestURL, callback);
@@ -140,7 +177,7 @@ function APIObject(opts) {
 
 
 
-	if (typeof this.post != 'function') {
+	if (!util.isFunction(this.post)) {
 		APIObject.prototype.post = function () {
 			if (this.method != APIObject.POST && this.method != APIObject.ALL) {
 				throw new Error('This API only support POST method.');
@@ -151,9 +188,9 @@ function APIObject(opts) {
 				flag = null;
 
 			for (var key in arguments) {
-				if (typeof arguments[key] === 'function') {
+				if (util.isFunction(arguments[key])) {
 					callback = arguments[key];
-				} else if (typeof arguments[key] === 'object' || typeof arguments[key] ===
+				} else if (util.isObject(arguments[key]) || typeof arguments[key] ===
 					'string') {
 					opts = arguments[key];
 				} else if (typeof arguments[key] === 'boolean') {
@@ -237,6 +274,10 @@ function APIObject(opts) {
 		type: {
 			configurable: false,
 			writable: false
+		},
+		restful: {
+			configurable: false,
+			writable: false
 		}
 	});
 
@@ -270,7 +311,8 @@ APIObject.parse = (opts, defaultHost) => {
 	var apiObj = {
 		url: '',
 		method: opts.method,
-		type: opts.type
+		type: opts.type,
+		restful: opts.restful
 	};
 	if (typeof opts.href === 'string') {
 		apiObj.url = opts.href;
@@ -285,6 +327,7 @@ APIObject.GET = 'GET';
 APIObject.POST = 'POST';
 APIObject.ALL = 'ALL';
 APIObject.JSON = 'JSON';
-APIObject.FORM = 'FROM';
+APIObject.FORM = 'FORM';
+APIObject.NO_REST = false;
 
 module.exports = APIObject;

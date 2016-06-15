@@ -27,10 +27,12 @@
   },
   "dependencies": {
     "bluebird": "^3.4.0",
+    "jsdom": "^9.2.1",
     "koa": "^1.2.0",
     "mongodb": "^2.1.21",
     "mongoose": "^4.4.19",
     "query-string": "^4.2.0",
+    "raw-body": "^2.1.6",
     "request": "^2.72.0",
     "sha1": "^1.1.1"
   }

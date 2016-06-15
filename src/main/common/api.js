@@ -1,5 +1,5 @@
-var APIObject = require('./apiobject');
-var util = require('./util');
+const APIObject = require('./apiobject');
+const util = require('./util');
 
 
 // var API = (function () {

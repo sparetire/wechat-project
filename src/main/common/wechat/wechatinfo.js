@@ -1,8 +1,9 @@
-var util = require('../util');
-var WeChatInfo = (function () {
+const util = require('../util');
+const WeChatInfo = (function () {
 	// 作为类变量/静态变量防止暴露
 	var instance = null,
 		flag = true;
+
 
 	function checkOptions(opts) {
 		// 第一次获取实例必须设置Options
@@ -20,6 +21,8 @@ var WeChatInfo = (function () {
 		}
 	}
 
+	// 暴露属性token，appid，appSecret，encodingAESKey，都是只读，
+	// 暴露方法getInstance，用来取得一个单例配置对象，第一次调用可以接受一个参数options对象，包含以上四个属性
 	function WeChatInfo(opts) {
 		// 不排除以后会需要手动调用构造函数,还是留着
 		if (!util.isObject(opts)) {
@@ -45,6 +48,26 @@ var WeChatInfo = (function () {
 			self.appSecret = '';
 			self.encodingAESKey = '';
 		}
+
+		Object.defineProperties(self, {
+			token: {
+				configurable: false,
+				writable: false
+			},
+			appid: {
+				configurable: false,
+				writable: false
+			},
+			appSecret: {
+				configurable: false,
+				writable: false
+			},
+			encodingAESKey: {
+				configurable: false,
+				writable: false
+			}
+		});
+
 		flag = true;
 		return self;
 	}
@@ -55,13 +78,13 @@ var WeChatInfo = (function () {
 			// Options的四个属性允许空但不建议这样
 			checkOptions(opts);
 			instance = new WeChatInfo(opts);
-			WeChatInfo.prototype.instance = instance;
+			// WeChatInfo.prototype.instance = instance;
 			// 不可枚举且不可删除不可修改指向
-			Object.defineProperty(WeChatInfo.prototype, 'instance', {
-				configurable: false,
-				enumerable: false,
-				writable: false
-			});
+			// Object.defineProperty(WeChatInfo.prototype, 'instance', {
+			// 	configurable: false,
+			// 	enumerable: false,
+			// 	writable: false
+			// });
 		}
 		return instance;
 	};

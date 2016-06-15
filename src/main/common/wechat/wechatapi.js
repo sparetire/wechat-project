@@ -1,6 +1,6 @@
 // 继承API类
 
-var API = require('../api');
+const API = require('../api');
 
 function WeChatAPI(opts) {
 	API.call(this, opts);
