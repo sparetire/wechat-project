@@ -23,17 +23,29 @@
     "babel-cli": "^6.9.0",
     "eslint": "^2.11.1",
     "js-beautify": "^1.6.2",
-    "jsdoc": "^3.4.0"
+    "jsdoc": "^3.4.0",
+    "koa-generator": "^1.1.5"
   },
   "dependencies": {
     "bluebird": "^3.4.0",
+    "co": "^4.6.0",
+    "deasync": "^0.1.7",
+    "debug": "^2.2.0",
     "jsdom": "^9.2.1",
     "koa": "^1.2.0",
+    "koa-csrf": "^2.5.0",
+    "koa-ejs": "^3.0.0",
+    "koa-favicon": "^1.2.1",
+    "koa-router": "^5.4.0",
+    "koa-session": "^3.3.1",
+    "koa-static": "^2.0.0",
     "mongodb": "^2.1.21",
     "mongoose": "^4.4.19",
     "query-string": "^4.2.0",
+    "ramda": "^0.21.0",
     "raw-body": "^2.1.6",
     "request": "^2.72.0",
-    "sha1": "^1.1.1"
+    "sha1": "^1.1.1",
+    "winston": "^2.2.0"
   }
 }

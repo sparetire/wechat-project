@@ -117,6 +117,7 @@ const AccessToken = (function () {
 		// private
 		function queryAccessToken(callback) {
 			if (util.isFunction(callback)) {
+				// todo
 				dataHolder.find()
 					.then((data) => {
 						callback(null, data);
@@ -124,11 +125,13 @@ const AccessToken = (function () {
 						callback(err, null);
 					});
 			} else {
+				// todo
 				return dataHolder.find()
 					.then((data) => {
 						return data;
 					}, (err) => {
 						console.error('An error occured when finding accessToken: ' + err);
+						return err;
 					});
 			}
 		}
@@ -167,19 +170,81 @@ const AccessToken = (function () {
 		self.isExpired = function () {
 			var currentTime = new Date()
 				.getTime() / 1000;
-			return expiresIn + 7000 < currentTime;
+			if (!accessToken || !expiresIn) {
+				return true;
+			} else {
+				return expiresIn + 7000 < currentTime;
+			}
 		};
 
 		// public
-		self.getAccessToken = function (callback) {
+		// self.getAccessToken = function (callback) {
+		// 	// 没过期
+		// 	if (!this.isExpired()) {
+		// 		// 回调
+		// 		if (util.isFunction(callback)) {
+		// 			callback(null, {
+		// 				accessToken: accessToken,
+		// 				expiresIn: expiresIn
+		// 			});
+		// 			// Promise
+		// 		} else {
+		// 			return Promise.resolve({
+		// 				accessToken: accessToken,
+		// 				expiresIn: expiresIn
+		// 			});
+		// 		}
+		// 		// 过期
+		// 	} else {
+		// 		// 回调
+		// 		if (util.isFunction(callback)) {
+		// 			updateAccessToken()
+		// 				.then((acToken) => {
+		// 					callback(null, acToken);
+		// 					// 保持操作需要等update执行完，但不需要等callback执行完
+		// 					saveAccessToken()
+		// 						.catch((err) => {
+		// 							console.error('Save accessToken error: ' + err);
+		// 						});
+		// 				}, (err) => {
+		// 					callback(err, null);
+		// 				});
+
+		// 			// Promise
+		// 		} else {
+		// 			return updateAccessToken()
+		// 				.then((acToken) => {
+		// 					// 保持操作需要等update执行完，但不需要等callback执行完
+		// 					saveAccessToken()
+		// 						.catch((err) => {
+		// 							console.error('Save accessToken error: ' + err);
+		// 						});
+		// 					return acToken;
+		// 				}, (err) => {
+		// 					console.error('Request accessToken error: ' + err);
+		// 					return err;
+		// 				});
+
+		// 		}
+		// 	}
+		// };
+
+		// public
+		self.getAccessToken = function* (callback) {
 			// 没过期
 			if (!this.isExpired()) {
 				// 回调
 				if (util.isFunction(callback)) {
-					callback(null, accessToken);
-					// Promise
+					callback(null, {
+						accessToken: accessToken,
+						expiresIn: expiresIn
+					});
+					// for co
 				} else {
-					return Promise.resolve(accessToken);
+					return {
+						accessToken: accessToken,
+						expiresIn: expiresIn
+					};
 				}
 				// 过期
 			} else {
@@ -187,7 +252,7 @@ const AccessToken = (function () {
 				if (util.isFunction(callback)) {
 					updateAccessToken()
 						.then((acToken) => {
-							callback(null, accessToken);
+							callback(null, acToken);
 							// 保持操作需要等update执行完，但不需要等callback执行完
 							saveAccessToken()
 								.catch((err) => {
@@ -197,23 +262,18 @@ const AccessToken = (function () {
 							callback(err, null);
 						});
 
-					// Promise
+					// for co
 				} else {
-					return updateAccessToken()
-						.then((acToken) => {
-							// 保持操作需要等update执行完，但不需要等callback执行完
-							saveAccessToken()
-								.catch((err) => {
-									console.error('Save accessToken error: ' + err);
-								});
-							return acToken;
-						}, (err) => {
-							console.error('Request accessToken error: ' + err);
-							return err;
+					var acToken = yield updateAccessToken();
+					// 保存操作需要等update执行完，但不需要等callback执行完
+					saveAccessToken()
+						.catch((err) => {
+							console.error('Save accessToken error: ' + err);
 						});
-
+					return acToken;
 				}
 			}
+
 		};
 
 

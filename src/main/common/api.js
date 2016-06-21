@@ -67,9 +67,9 @@ function API(config) {
 	for (var index in arguments) {
 		if (util.isObject(arguments[index])) {
 			for (var key in arguments[index]) {
-				if (key != 'defaultHost') {
+				if (key != API.DEFAULT_HOST) {
 					var api = arguments[index][key];
-					self[key] = new APIObject(APIObject.parse(api, config.defaultHost));
+					self[key] = new APIObject(APIObject.parse(api, config[API.DEFAULT_HOST]));
 				}
 			}
 		}
@@ -77,5 +77,7 @@ function API(config) {
 
 	return self;
 }
+
+API.DEFAULT_HOST = 'defaultHost';
 
 module.exports = API;
