@@ -1,6 +1,9 @@
 const DBFactory = require('./mongodbfactory');
 const util = require('./util');
 
+// 单例，读取一个数据库配置文件，
+// 每个数据库连接对象都会被挂载到这个单例上，
+// 数据库连接对象即MongoDB驱动的DB对象
 const MongoDB = (function () {
 	var instance = null,
 		flag = true;
@@ -23,12 +26,25 @@ const MongoDB = (function () {
 			}
 		}
 
+		self.close = function () {
+			try {
+				for (var key in this) {
+					if (util.isFunction(this[key].close)) {
+						this[key].close();
+					}
+				}
+			} catch (err) {
+				console.error('An error occured when closing database connection.');
+				console.error(err.stack);
+			}
+		};
+
 
 		flag = true;
 		return self;
 	}
 
-
+	// 接受一个配置文件
 	MongoDB.getInstance = function (config) {
 		if (!instance) {
 			flag = false;

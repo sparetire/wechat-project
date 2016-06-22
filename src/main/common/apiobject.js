@@ -138,7 +138,6 @@ function APIObject(opts) {
 				throw new Error('Please set right options.');
 			}
 
-			console.log(requestURL);
 
 			if (callback && !flag) {
 				request(requestURL, callback);

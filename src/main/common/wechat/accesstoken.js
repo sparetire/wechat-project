@@ -14,7 +14,7 @@
 
 
 // 构造方法
-// AccessToken(apiObj, dataHolder) dataHolder是一个持久化对象，
+// AccessToken(opts) opts包含一个apiObject，dataHolder，wechatInfo，dataHolder是一个持久化对象，
 // 具有一个save方法，save方法接受一个js对象，包含AccessToken的基本信息，
 // save是一个更新或保存的操作，支持回调或promise，
 // 还具有一个find方法，参数是mongodb的find方法的参数，支持回调或promise
@@ -57,13 +57,17 @@
 
 
 const util = require('../util');
-const Promise = require('bluebird');
+const deasync = require('deasync');
 
 const AccessToken = (function () {
 	var instance = null,
 		flag = true;
 
-	function AccessToken(apiObject, dataHolder) {
+	// 接受一个对象，对象包含apiObject，wechatInfo，dataHolder属性
+	function AccessToken(opts) {
+		var apiObject = opts.apiObject,
+			dataHolder = opts.dataHolder,
+			wechatInfo = opts.wechatInfo;
 		if (flag) {
 			throw new Error(
 				'Can\'t use this constructor to get an instance of AccessToken.');
@@ -82,11 +86,15 @@ const AccessToken = (function () {
 		// private
 		function updateAccessToken(callback) {
 			if (util.isFunction(callback)) {
-				apiObject.get()
+				apiObject.get({
+						appid: wechatInfo.appid,
+						secret: wechatInfo.appSecret
+					})
 					.then((args) => {
-						var body = args[2];
+						var body = JSON.parse(args[2]);
 						accessToken = body.access_token;
-						expiresIn = body.expires_in;
+						expiresIn = body.expires_in * 1000 + (new Date())
+							.getTime();
 						var data = {
 							accessToken: accessToken,
 							expiresIn: expiresIn
@@ -98,11 +106,15 @@ const AccessToken = (function () {
 						callback(err, body);
 					});
 			} else {
-				return apiObject.get()
+				return apiObject.get({
+						appid: wechatInfo.appid,
+						secret: wechatInfo.appSecret
+					})
 					.then((args) => {
-						var body = args[2];
+						var body = JSON.parse(args[2]);
 						accessToken = body.access_token;
-						expiresIn = body.expires_in;
+						expiresIn = body.expires_in * 1000 + (new Date())
+							.getTime();
 						return {
 							accessToken: accessToken,
 							expiresIn: expiresIn
@@ -117,20 +129,18 @@ const AccessToken = (function () {
 		// private
 		function queryAccessToken(callback) {
 			if (util.isFunction(callback)) {
-				// todo
-				dataHolder.find()
+				dataHolder.find(AccessToken.KEY)
 					.then((data) => {
 						callback(null, data);
 					}, (err) => {
 						callback(err, null);
 					});
 			} else {
-				// todo
-				return dataHolder.find()
+				return dataHolder.find(AccessToken.KEY)
 					.then((data) => {
 						return data;
 					}, (err) => {
-						console.error('An error occured when finding accessToken: ' + err);
+						console.error('An error occured when finding accessToken: \n' + err.stack);
 						return err;
 					});
 			}
@@ -156,7 +166,7 @@ const AccessToken = (function () {
 					.then((data) => {
 						return data;
 					}, (err) => {
-						console.error('An error occured when saving accessToken: ' + err);
+						console.error('An error occured when saving accessToken: \n' + err.stack);
 						return err;
 					});
 			}
@@ -168,12 +178,12 @@ const AccessToken = (function () {
 
 		// public
 		self.isExpired = function () {
-			var currentTime = new Date()
-				.getTime() / 1000;
+			var currentTime = (new Date())
+				.getTime();
 			if (!accessToken || !expiresIn) {
 				return true;
 			} else {
-				return expiresIn + 7000 < currentTime;
+				return currentTime > expiresIn - 300000;
 			}
 		};
 
@@ -232,7 +242,7 @@ const AccessToken = (function () {
 		// public
 		self.getAccessToken = function* (callback) {
 			// 没过期
-			if (!this.isExpired()) {
+			if (!self.isExpired()) {
 				// 回调
 				if (util.isFunction(callback)) {
 					callback(null, {
@@ -277,17 +287,27 @@ const AccessToken = (function () {
 		};
 
 
+		// async to sync
+		var done = false;
 		queryAccessToken()
 			.then((data) => {
-				accessToken = data.accessToken;
-				expiresIn = data.expiresIn;
+				accessToken = data ? data.accessToken : null;
+				expiresIn = data ? data.expiresIn : null;
 				if (self.isExpired()) {
 					return updateAccessToken()
 						.then((data) => {
+							done = true;
 							return saveAccessToken();
 						});
+				} else {
+					done = true;
 				}
+			})
+			.catch((err) => {
+				console.error('An error occured when initializing AccessToken.');
+				console.error(err.stack);
 			});
+		deasync.loopWhile(() => !done);
 
 		flag = true;
 
@@ -295,13 +315,18 @@ const AccessToken = (function () {
 	}
 
 
-	AccessToken.getInstance = function (apiObject, dataHolder) {
+	AccessToken.getInstance = function (opts) {
 		if (!instance) {
 			flag = false;
-			instance = new AccessToken(apiObject, dataHolder);
+			instance = new AccessToken(opts);
 		}
 		return instance;
 	};
 
+	AccessToken.KEY = 'accessToken';
+
 	return AccessToken;
 })();
+
+
+module.exports = AccessToken;
