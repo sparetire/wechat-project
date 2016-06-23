@@ -1,11 +1,12 @@
 const koa = require('koa');
 const sha1 = require('sha1');
+const autoReply = require('./middleware/autoreply');
 
 const app = new koa();
 
-var wechatConfig = {
-	TOKEN: ''
-};
+// var wechatConfig = {
+// 	TOKEN: ''
+// };
 
 function checkSignature(config, query) {
 	//config最好判断是Config类的实例
@@ -28,14 +29,16 @@ function checkSignature(config, query) {
 	}
 }
 
-app.use(function* () {
-	if (checkSignature(wechatConfig, this.query)) {
-		this.body = this.query.echostr;
-		console.log('BODY IS: ' + this.body);
-	} else {
-		this.body = 'It looks something wrong.';
-		console.log('BODY IS: ' + this.body);
-	}
-});
+app.use(autoReply());
+
+// app.use(function* () {
+// 	if (checkSignature(wechatConfig, this.query)) {
+// 		this.body = this.query.echostr;
+// 		console.log('BODY IS: ' + this.body);
+// 	} else {
+// 		this.body = 'It looks something wrong.';
+// 		console.log('BODY IS: ' + this.body);
+// 	}
+// });
 
 app.listen(80);

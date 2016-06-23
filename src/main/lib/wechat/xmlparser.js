@@ -89,29 +89,7 @@ function XmlParser() {
 		// 接受一个xml字符串，转换成一个对象，
 		// 对象属性全是小驼峰命名值为字符串
 		// 返回Promise，解析xml过程中可能会抛出异常
-		XmlParser.prototype.parseXml = function (xml) {
-			return new Promise(function (resolve, reject) {
-				xml2js.parseString(xml, {
-					trim: true,
-					normalize: true
-				}, (err, data) => {
-					if (err) {
-						reject(err);
-					}
-
-					var obj = data.xml;
-					var newObj = {};
-					for (var key in obj) {
-						var newKey = key.slice(0, 1)
-							.toLowerCase() + key.slice(1);
-						newObj[newKey] = obj[key][0];
-					}
-
-					resolve(newObj);
-
-				});
-			});
-		};
+		XmlParser.prototype.parseXml = XmlParser.parseXml;
 	}
 
 	if (!util.isFunction(self.toXml)) {
@@ -121,8 +99,31 @@ function XmlParser() {
 	return self;
 }
 
-XmlParser.parseXml = XmlParser.prototype.parseXml;
-XmlParser.toXml = XmlParser.prototype.toXml;
+XmlParser.parseXml = function (xml) {
+	return new Promise(function (resolve, reject) {
+		xml2js.parseString(xml, {
+			trim: true,
+			normalize: true
+		}, (err, data) => {
+			if (err) {
+				reject(err);
+			}
+
+			var obj = data.xml;
+			var newObj = {};
+			for (var key in obj) {
+				var newKey = key.slice(0, 1)
+					.toLowerCase() + key.slice(1);
+				newObj[newKey] = obj[key][0];
+			}
+
+			resolve(newObj);
+
+		});
+	});
+};
+
+XmlParser.toXml = toXml;
 
 
 module.exports = XmlParser;

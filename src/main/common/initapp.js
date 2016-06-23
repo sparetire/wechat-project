@@ -18,18 +18,18 @@ var accessToken = AccessToken.getInstance({
 	wechatInfo: wechatInfo
 });
 
-co(accessToken.getAccessToken)
-	.then((data) => {
-		console.log(data);
-	});
-co(accessToken.getAccessToken)
-	.then((data) => {
-		console.log(data);
-	});
-co(accessToken.getAccessToken)
-	.then((data) => {
-		console.log(data);
-	});
+// co(accessToken.getAccessToken)
+// 	.then((data) => {
+// 		console.log(data);
+// 	});
+// co(accessToken.getAccessToken)
+// 	.then((data) => {
+// 		console.log(data);
+// 	});
+// co(accessToken.getAccessToken)
+// 	.then((data) => {
+// 		console.log(data);
+// 	});
 
 
 

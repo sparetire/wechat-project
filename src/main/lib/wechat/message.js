@@ -68,8 +68,14 @@ Message.TYPE_VIDEO = 'video';
 Message.TYPE_SHORT_VIDEO = 'shortvideo';
 Message.TYPE_LOCATION = 'location';
 Message.TYPE_LINK = 'link';
+Message.TYPE_EVENT = 'event';
 Message.TYPE_MUSIC = 'music';
 Message.TYPE_NEWS = 'news';
-Message.TYPE_EVENT = 'event';
+Message.EVENT_SUBSCRIBE = 'subscribe';
+Message.EVENT_UNSUBSCRIBE = 'unsubscribe';
+Message.EVENT_SCAN = 'SCAN';
+Message.EVENT_LOCATION = 'LOCATION';
+Message.EVENT_CLICK = 'CLICK';
+Message.EVENT_VIEW = 'VIEW';
 
 module.exports = Message;

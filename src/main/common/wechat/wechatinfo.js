@@ -18,6 +18,8 @@ const WeChatInfo = (function () {
 			console.warn('You didn\'t set appSecret for WeChatInfo yet.');
 		} else if (!opts.encodingAESKey) {
 			console.warn('You didn\'t set encodingAESKey for WeChatInfo yet.');
+		} else if (!opts.username) {
+			console.warn('You didn\'t set username for WeChatInfo yet.');
 		}
 	}
 
@@ -42,11 +44,13 @@ const WeChatInfo = (function () {
 			self.appSecret = typeof opts.appSecret === 'string' ? opts.appSecret : '';
 			self.encodingAESKey = typeof opts.encodingAESKey === 'string' ? opts.encodingAESKey :
 				'';
+			self.username = typeof opts.username === 'string' ? opts.username : '';
 		} else {
 			self.token = '';
 			self.appid = '';
 			self.appSecret = '';
 			self.encodingAESKey = '';
+			self.uesrname = '';
 		}
 
 		Object.defineProperties(self, {
