@@ -1,6 +1,3 @@
-const util = require('../util');
-const Promise = require('bluebird');
-
 function DataHolder(db) {
 	var self = this instanceof DataHolder ? this : Object.create(DataHolder.prototype);
 	var collection = db.collection(DataHolder.COLLECTION);

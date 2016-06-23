@@ -84,6 +84,8 @@ const AccessToken = (function () {
 			expiresIn = null;
 
 		// private
+		// 私有，用来请求接口更新accessToken，
+		// 接受一个可选callback，如果没有则以Promise调用
 		function updateAccessToken(callback) {
 			if (util.isFunction(callback)) {
 				apiObject.get({
@@ -127,6 +129,8 @@ const AccessToken = (function () {
 		}
 
 		// private
+		// 从持久化的数据源查询accessToken
+		// 接受一个可选callback，如果没有则以Promise调用
 		function queryAccessToken(callback) {
 			if (util.isFunction(callback)) {
 				dataHolder.find(AccessToken.KEY)
@@ -147,6 +151,9 @@ const AccessToken = (function () {
 		}
 
 		// private
+		// 保存accessToken到持久化数据源，
+		// 如果存在就更新，不存在就保存
+		// 接受一个可选callback，如果没有则以Promise调用
 		function saveAccessToken(callback) {
 			if (util.isFunction(callback)) {
 				dataHolder.save({
@@ -177,6 +184,7 @@ const AccessToken = (function () {
 		var self = this instanceof AccessToken ? this : Object.create(AccessToken.prototype);
 
 		// public
+		// 判断accessToken是否过期，返回布尔值
 		self.isExpired = function () {
 			var currentTime = (new Date())
 				.getTime();
@@ -187,59 +195,10 @@ const AccessToken = (function () {
 			}
 		};
 
-		// public
-		// self.getAccessToken = function (callback) {
-		// 	// 没过期
-		// 	if (!this.isExpired()) {
-		// 		// 回调
-		// 		if (util.isFunction(callback)) {
-		// 			callback(null, {
-		// 				accessToken: accessToken,
-		// 				expiresIn: expiresIn
-		// 			});
-		// 			// Promise
-		// 		} else {
-		// 			return Promise.resolve({
-		// 				accessToken: accessToken,
-		// 				expiresIn: expiresIn
-		// 			});
-		// 		}
-		// 		// 过期
-		// 	} else {
-		// 		// 回调
-		// 		if (util.isFunction(callback)) {
-		// 			updateAccessToken()
-		// 				.then((acToken) => {
-		// 					callback(null, acToken);
-		// 					// 保持操作需要等update执行完，但不需要等callback执行完
-		// 					saveAccessToken()
-		// 						.catch((err) => {
-		// 							console.error('Save accessToken error: ' + err);
-		// 						});
-		// 				}, (err) => {
-		// 					callback(err, null);
-		// 				});
-
-		// 			// Promise
-		// 		} else {
-		// 			return updateAccessToken()
-		// 				.then((acToken) => {
-		// 					// 保持操作需要等update执行完，但不需要等callback执行完
-		// 					saveAccessToken()
-		// 						.catch((err) => {
-		// 							console.error('Save accessToken error: ' + err);
-		// 						});
-		// 					return acToken;
-		// 				}, (err) => {
-		// 					console.error('Request accessToken error: ' + err);
-		// 					return err;
-		// 				});
-
-		// 		}
-		// 	}
-		// };
 
 		// public
+		// 取得accessToken，接受一个可选的callback，
+		// 如果有则以回调形式调用，否则以Promise形式调用
 		self.getAccessToken = function* (callback) {
 			// 没过期
 			if (!self.isExpired()) {
