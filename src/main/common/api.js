@@ -22,6 +22,10 @@ function API(config) {
 				if (key != API.DEFAULT_HOST) {
 					var api = arguments[index][key];
 					self[key] = new APIObject(APIObject.parse(api, config[API.DEFAULT_HOST]));
+					Object.defineProperty(self, key, {
+						configurable: false,
+						writable: false
+					});
 				}
 			}
 		}

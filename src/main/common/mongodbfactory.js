@@ -4,8 +4,10 @@ const URL = require('url');
 const MongoClient = require('mongodb');
 const QueryString = require('query-string');
 
+/* global logger */
 
 // 接受一个字符串参数作为url，生成一个DB对象
+// 可能抛出异常
 function DBFactory(url) {
 	if (typeof url != 'string') {
 		throw new Error(`Constructor expect a string parameter, but get a: ${url}.`);
@@ -17,9 +19,7 @@ function DBFactory(url) {
 			done = true;
 		})
 		.catch(function (err) {
-			console.error('An error occured when connecting to mongodb.');
-			console.error(err.stack);
-			// throw new Error(err);
+			logger.error(`An error occured when connecting to mongodb.\n${err.stack}`);
 		});
 	// WTF, async to sync
 	require('deasync')
@@ -30,6 +30,7 @@ function DBFactory(url) {
 
 // 将一个数据库配置的配置对象和一个默认配置对象转化成数据库连接url，
 // 返回url字符串，配置对象的优先级大于默认配置对象
+// 可能抛出异常
 DBFactory.parse = function (opts, dft) {
 	if (!util.isObject(opts)) {
 		throw new Error('Config must be an object.');

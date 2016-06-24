@@ -27,6 +27,7 @@ const URL = require('url');
 // 对于post，options是必需的，如果是字符串，则作为body，如果是对象，则根据type的值被序列化成json或者form字符串，默认json，
 // 一个标记flag，可选，默认false，如果为true，则options必填，options作为http的配置对象，其中method和url会被忽略
 // 一个回调函数callback，可选，callback有三个参数，err，resp，body，同request库的callback，如果不传入callback，则get或post是promise函数
+// 可能抛出异常
 function APIObject(opts) {
 	var self = this instanceof APIObject ? this : Object.create(APIObject.prototype);
 	if (!util.isObjectOrNull(opts)) {
@@ -92,6 +93,7 @@ function APIObject(opts) {
 	// 对于get方法，三个属性都是可选
 	// post必须要有一个请求参数即body
 	// APIObject的url,method,type应该是只读
+	// 可能抛出异常，需要被捕获
 	if (!util.isFunction(this.get)) {
 		// 我一个喜欢装逼的人怎么会不用lambda表达式？因为这里有个坑。。
 		APIObject.prototype.get = function () {
@@ -288,6 +290,7 @@ function APIObject(opts) {
 // 函数会将一个URL对象进行处理得到一个url字符串
 // 输出一个APIObject接受的对象
 // 带有url，method和type三个属性
+// 可能抛出异常
 APIObject.parse = (opts, defaultHost) => {
 	if (!util.isObject(opts)) {
 		throw new Error('APIObject.parse expect an object, but get a parameter: ' +

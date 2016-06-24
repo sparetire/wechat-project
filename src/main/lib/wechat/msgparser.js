@@ -18,50 +18,182 @@ function parseSubscribeEvent(msg) {
 
 function parseUnsubscribeEvent(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseScanEvent(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseLocationEvent(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseClickEvent(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseViewEvent(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseTextMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseImageMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseVoiceMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseVideoMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseShortVideoMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseLocationMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseLinkMsg(msg) {
 	//todo
+	var currentTime = (new Date())
+		.getTime();
+	currentTime = Math.floor(currentTime / 1000);
+	var data = {
+		toUserName: msg.fromUserName,
+		fromUserName: msg.toUserName,
+		createTime: currentTime,
+		msgType: Message.TYPE_TEXT,
+		content: '蛤？'
+	};
+	return new Message(data);
 }
 
 function parseEventMsg(msg) {

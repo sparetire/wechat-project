@@ -6,18 +6,51 @@ const AccessToken = require('./wechat/accesstoken');
 const dbConfig = require('../conf/mongodbconf');
 const MongoDB = require('./mongodb');
 const DataHolder = require('./wechat/dataholder');
-const co = require('co');
+const winston = require('winston');
 
-var wechatInfo = WeChatInfo.getInstance(WeChatConfig);
-var wechatAPI = new WeChatAPI(WeChatAPIConfig);
-var mongoDB = MongoDB.getInstance(dbConfig);
-var dataHolder = new DataHolder(mongoDB.wechat);
-var accessToken = AccessToken.getInstance({
-	apiObject: wechatAPI.accessToken,
-	dataHolder: dataHolder,
-	wechatInfo: wechatInfo
-});
 
+
+function init(app) {
+	var wechatInfo = WeChatInfo.getInstance(WeChatConfig);
+	var wechatAPI = new WeChatAPI(WeChatAPIConfig);
+	var mongoDB = MongoDB.getInstance(dbConfig);
+	var dataHolder = new DataHolder(mongoDB.wechat);
+	var accessToken = AccessToken.getInstance({
+		apiObject: wechatAPI.accessToken,
+		dataHolder: dataHolder,
+		wechatInfo: wechatInfo
+	});
+
+	var logger = new(winston.Logger)({
+		exitOnError: false,
+		transports: [
+			new(winston.transports.File)({
+				name: 'info-file',
+				filename: './log/wechat-info.log',
+				maxsize: 5000000,
+				level: 'info'
+			}),
+			new(winston.transports.File)({
+				name: 'error-file',
+				filename: './log/wechat-error.log',
+				maxsize: 5000000,
+				level: 'error'
+			})
+		]
+	});
+
+	winston.remove(winston.transports.Console);
+
+	app.context.wechatInfo = global.wechatInfo = wechatInfo;
+	app.context.wechatAPI = global.wechatAPI = wechatAPI;
+	app.context.mongoDB = global.mongoDB = mongoDB;
+	app.context.accessToken = global.accessToken = accessToken;
+	global.logger = logger;
+
+	logger.info('Koa app is initializing...');
+}
+
+module.exports = init;
 // co(accessToken.getAccessToken)
 // 	.then((data) => {
 // 		console.log(data);

@@ -36,6 +36,7 @@ function Message(obj) {
 	if (!util.isFunction(self.toXml)) {
 		// 将自身转换为XML字符串
 		// 返回xml字符串
+		// 可能抛出异常，需要被捕获
 		Message.prototype.toXml = function () {
 			return xmlParser.toXml(this);
 		};
@@ -48,13 +49,15 @@ function Message(obj) {
 
 // 将一个xml字符串转换为Message对象，
 // 返回一个Promise传入Message对象
+// 可能抛出异常，需要被捕获
 Message.parseXml = function (xml) {
+	/* global logger */
 	return xmlParser.parseXml(xml)
 		.then((data) => {
 			return new Message(data);
 		}, (err) => {
-			console.error('An error occured when parsing xml.');
-			console.error(err.stack);
+			logger.error(`An error occured when parsing xml.\n${err.stack}`);
+			logger.error(err.stack);
 			return err;
 		});
 };

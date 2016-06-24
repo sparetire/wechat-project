@@ -59,11 +59,14 @@
 const util = require('../util');
 const deasync = require('deasync');
 
+/* global logger */
+
 const AccessToken = (function () {
 	var instance = null,
 		flag = true;
 
 	// 接受一个对象，对象包含apiObject，wechatInfo，dataHolder属性
+	// 可能抛出异常
 	function AccessToken(opts) {
 		var apiObject = opts.apiObject,
 			dataHolder = opts.dataHolder,
@@ -86,27 +89,33 @@ const AccessToken = (function () {
 		// private
 		// 私有，用来请求接口更新accessToken，
 		// 接受一个可选callback，如果没有则以Promise调用
+		// 可能抛出异常，需要被捕获
 		function updateAccessToken(callback) {
 			if (util.isFunction(callback)) {
-				apiObject.get({
-						appid: wechatInfo.appid,
-						secret: wechatInfo.appSecret
-					})
-					.then((args) => {
-						var body = JSON.parse(args[2]);
-						accessToken = body.access_token;
-						expiresIn = body.expires_in * 1000 + (new Date())
-							.getTime();
-						var data = {
-							accessToken: accessToken,
-							expiresIn: expiresIn
-						};
-						callback(null, data);
-					}, (args) => {
-						var body = args[2],
-							err = args[0];
-						callback(err, body);
-					});
+				try {
+					apiObject.get({
+							appid: wechatInfo.appid,
+							secret: wechatInfo.appSecret
+						})
+						.then((args) => {
+							var body = JSON.parse(args[2]);
+							accessToken = body.access_token;
+							expiresIn = body.expires_in * 1000 + (new Date())
+								.getTime();
+							var data = {
+								accessToken: accessToken,
+								expiresIn: expiresIn
+							};
+							callback(null, data);
+						}, (args) => {
+							var body = args[2],
+								err = args[0];
+							callback(err, body);
+						});
+				} catch (err) {
+					logger.error(
+						`An error occured when request access token api.\n${err.stack}`);
+				}
 			} else {
 				return apiObject.get({
 						appid: wechatInfo.appid,
@@ -131,20 +140,28 @@ const AccessToken = (function () {
 		// private
 		// 从持久化的数据源查询accessToken
 		// 接受一个可选callback，如果没有则以Promise调用
+		// 可能抛出异常，需要被捕获
 		function queryAccessToken(callback) {
 			if (util.isFunction(callback)) {
-				dataHolder.find(AccessToken.KEY)
-					.then((data) => {
-						callback(null, data);
-					}, (err) => {
-						callback(err, null);
-					});
+				try {
+					dataHolder.find(AccessToken.KEY)
+						.then((data) => {
+							callback(null, data);
+						}, (err) => {
+							callback(err, null);
+						});
+				} catch (err) {
+					logger.error(
+						`An error occured when querying access token from database.\n${err.stack}`
+					);
+				}
 			} else {
 				return dataHolder.find(AccessToken.KEY)
 					.then((data) => {
 						return data;
 					}, (err) => {
-						console.error('An error occured when finding accessToken: \n' + err.stack);
+						logger.error(
+							`An error occured when finding accessToken.\n${err.stack}`);
 						return err;
 					});
 			}
@@ -154,17 +171,22 @@ const AccessToken = (function () {
 		// 保存accessToken到持久化数据源，
 		// 如果存在就更新，不存在就保存
 		// 接受一个可选callback，如果没有则以Promise调用
+		// 可能抛出异常，需要被捕获
 		function saveAccessToken(callback) {
 			if (util.isFunction(callback)) {
-				dataHolder.save({
-						accessToken: accessToken,
-						expiresIn: expiresIn
-					})
-					.then((data) => {
-						callback(null, data);
-					}, (err) => {
-						callback(err, null);
-					});
+				try {
+					dataHolder.save({
+							accessToken: accessToken,
+							expiresIn: expiresIn
+						})
+						.then((data) => {
+							callback(null, data);
+						}, (err) => {
+							callback(err, null);
+						});
+				} catch (err) {
+					logger.error(`An error occured when saving access token.\n${err.stack}`);
+				}
 			} else {
 				return dataHolder.save({
 						accessToken: accessToken,
@@ -173,7 +195,7 @@ const AccessToken = (function () {
 					.then((data) => {
 						return data;
 					}, (err) => {
-						console.error('An error occured when saving accessToken: \n' + err.stack);
+						logger.error(`An error occured when saving accessToken.\n${err.stack}`);
 						return err;
 					});
 			}
@@ -199,6 +221,7 @@ const AccessToken = (function () {
 		// public
 		// 取得accessToken，接受一个可选的callback，
 		// 如果有则以回调形式调用，否则以Promise形式调用
+		// 可能抛出异常，需要被捕获
 		self.getAccessToken = function* (callback) {
 			// 没过期
 			if (!self.isExpired()) {
@@ -225,10 +248,13 @@ const AccessToken = (function () {
 							// 保持操作需要等update执行完，但不需要等callback执行完
 							saveAccessToken()
 								.catch((err) => {
-									console.error('Save accessToken error: ' + err);
+									logger.error(`Save accessToken error.\n${err.stack}`);
 								});
 						}, (err) => {
 							callback(err, null);
+						})
+						.catch((err) => {
+							logger.error(`Update access token error.\n${err.stack}`);
 						});
 
 					// for co
@@ -237,7 +263,7 @@ const AccessToken = (function () {
 					// 保存操作需要等update执行完，但不需要等callback执行完
 					saveAccessToken()
 						.catch((err) => {
-							console.error('Save accessToken error: ' + err);
+							logger.error(`Save accessToken error.\n${err.stack}`);
 						});
 					return acToken;
 				}
@@ -263,8 +289,8 @@ const AccessToken = (function () {
 				}
 			})
 			.catch((err) => {
-				console.error('An error occured when initializing AccessToken.');
-				console.error(err.stack);
+				logger.error(
+					`An error occured when initializing AccessToken.\n${err.stack}`);
 			});
 		deasync.loopWhile(() => !done);
 

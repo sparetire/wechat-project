@@ -15,19 +15,9 @@ var wechatAPIs = {
 	// 如果get的api中已带查询字符串，且又有参数，
 	// 参数会被作为查询字符串拼接到已有的查询字符串之后
 	defaultHost: 'www.chetong.net',
-	fuck: {
-		href: 'http://www.chetong.net/api/check/usertype',
-		pathname: '/api/check/usertype',
-		method: 'post'
-	},
 	accessToken: {
 		href: 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential',
 		method: 'get'
-	},
-	rest: {
-		href: 'http://www.aaa.com/{name}/{password}',
-		method: 'get',
-		restful: true
 	}
 };
 

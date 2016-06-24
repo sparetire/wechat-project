@@ -25,6 +25,7 @@ const WeChatInfo = (function () {
 
 	// 暴露属性token，appid，appSecret，encodingAESKey，都是只读，
 	// 暴露方法getInstance，用来取得一个单例配置对象，第一次调用可以接受一个参数options对象，包含以上四个属性
+	// 可能抛出异常
 	function WeChatInfo(opts) {
 		// 不排除以后会需要手动调用构造函数,还是留着
 		if (!util.isObject(opts)) {
@@ -67,6 +68,10 @@ const WeChatInfo = (function () {
 				writable: false
 			},
 			encodingAESKey: {
+				configurable: false,
+				writable: false
+			},
+			username: {
 				configurable: false,
 				writable: false
 			}

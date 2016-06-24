@@ -99,6 +99,7 @@ function XmlParser() {
 	return self;
 }
 
+// 可能抛出异常，需要被捕获
 XmlParser.parseXml = function (xml) {
 	return new Promise(function (resolve, reject) {
 		xml2js.parseString(xml, {

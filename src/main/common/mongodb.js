@@ -1,6 +1,8 @@
 const DBFactory = require('./mongodbfactory');
 const util = require('./util');
 
+/* global logger */
+
 // 单例，读取一个数据库配置文件，
 // 每个数据库连接对象都会被挂载到这个单例上，
 // 数据库连接对象即MongoDB驱动的DB对象
@@ -8,6 +10,7 @@ const MongoDB = (function () {
 	var instance = null,
 		flag = true;
 
+	// 可能抛出异常
 	function MongoDB(config) {
 		if (flag) {
 			throw new Error(
@@ -23,6 +26,10 @@ const MongoDB = (function () {
 		for (var key in config) {
 			if (key !== MongoDB.DEFAULT) {
 				self[key] = DBFactory(DBFactory.parse(config[key], config[MongoDB.DEFAULT]));
+				Object.defineProperty(self, key, {
+					configurable: false,
+					writable: false
+				});
 			}
 		}
 
@@ -34,8 +41,8 @@ const MongoDB = (function () {
 					}
 				}
 			} catch (err) {
-				console.error('An error occured when closing database connection.');
-				console.error(err.stack);
+				logger.error(
+					`An error occured when closing database connection.\n${err.stack}`);
 			}
 		};
 
@@ -68,7 +75,7 @@ const MongoDB = (function () {
 // 	.find()
 // 	.limit(2)
 // 	.toArray((err, data) => {
-// 		console.log(data);
+// 		logger.log(data);
 // 	});
 
 module.exports = MongoDB;
