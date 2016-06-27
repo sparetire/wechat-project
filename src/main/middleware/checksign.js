@@ -1,30 +1,10 @@
-const sha1 = require('sha1');
-const util = require('../common/util');
+const security = require('../common/wechat/security');
+const checkSignature = security.checkSignature;
 
-/* global logger */
-function checkSignature(token, query) {
-	if (!util.isObject(query) || typeof token !== 'string') {
-		logger.error('Parameter query is not an object or token is not a string.');
-		return false;
-	} else if (!query.signature || !query.timestamp || !query.nonce || !query.echostr) {
-		return false;
-	}
-	var signature = query.signature;
-	var timestamp = query.timestamp;
-	var nonce = query.nonce;
-	var tmpStr = [token, timestamp, nonce].sort()
-		.join('');
-	if (sha1(tmpStr) === signature) {
-		return true;
-	} else {
-		return false;
-	}
-
-}
+/* global logger, wechatInfo */
 
 function checkSign(opts) {
 	return function* parseSignature(next) {
-		/* global wechatInfo */
 		var ctx = this;
 		if (ctx.method === 'POST') {
 			yield next;

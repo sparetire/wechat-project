@@ -1,5 +1,8 @@
 const util = require('../../common/util');
 const XmlParser = require('./xmlparser');
+const security = require('../../common/wechat/security');
+const checkMsgSignature = security.checkMsgSignature;
+const dencryptMsg = security.dencryptMsg;
 
 // xml解析器，用来解析和生成微信消息的xml，
 // 具有toXml(obj)和parseXml(xmlString)两个方法
@@ -38,6 +41,7 @@ function Message(obj) {
 		// 返回xml字符串
 		// 可能抛出异常，需要被捕获
 		Message.prototype.toXml = function () {
+			// todo
 			return xmlParser.toXml(this);
 		};
 	}
@@ -50,11 +54,26 @@ function Message(obj) {
 // 将一个xml字符串转换为Message对象，
 // 返回一个Promise传入Message对象
 // 可能抛出异常，需要被捕获
-Message.parseXml = function (xml) {
-	/* global logger */
+// 如果是加密消息，则需要一个查询字符串对象
+Message.parseXml = function (xml, query) {
+	/* global logger, wechatInfo */
 	return xmlParser.parseXml(xml)
 		.then((data) => {
-			return new Message(data);
+			// 对加密消息进行解密
+			if (wechatInfo.msgEncrypt && data.encrypt && query.msg_signature && query.nonce &&
+				query.timestamp) {
+				// 检查消息签名
+				if (checkMsgSignature(wechatInfo.token, query, data.encrypt)) {
+					// todo
+					data = dencryptMsg(data.encrypt);
+					return new Message(data);
+				} else {
+					throw new Error(`Invalid message:\n${data}`);
+				}
+				// 明文消息
+			} else {
+				return new Message(data);
+			}
 		}, (err) => {
 			logger.error(`An error occured when parsing xml.\n${err.stack}`);
 			logger.error(err.stack);

@@ -31,6 +31,18 @@ var util = {
 	},
 	isFunction: function (obj) {
 		return typeof obj === 'function';
+	},
+	base64Encode: function (data) {
+		return new Buffer(data)
+			.toString('base64');
+	},
+	base64DecodeToString: function (str, charset) {
+		charset = charset || 'utf8';
+		return new Buffer(str, 'base64')
+			.toString(charset);
+	},
+	base64Decode: function (str) {
+		return new Buffer(str, 'base64');
 	}
 };
 
