@@ -42,9 +42,9 @@ function APIObject(opts) {
 			APIObject.GET;
 		var temp = URL.parse(self.url);
 		// 忽略POST方法的url的查询字符串
-		if (self.method === APIObject.POST && !util.isNullStrOrNull(temp.search)) {
-			self.url = self.url.slice(0, self.url.indexOf('?'));
-		}
+		// if (self.method === APIObject.POST && !util.isNullStrOrNull(temp.search)) {
+		// 	self.url = self.url.slice(0, self.url.indexOf('?'));
+		// }
 		// 为POST设置默认body类型为json
 		if (self.method === APIObject.POST) {
 			if (util.isNullOrUndefined(opts.type)) {
@@ -134,7 +134,7 @@ function APIObject(opts) {
 				});
 				// 带参,是请求参数对象不是http设置对象
 			} else if (util.isObject(opts) && !flag) {
-				requestURL = this.url.indexOf('?') === -1 ? this.url + QueryString.stringify(
+				requestURL = this.url.indexOf('?') === -1 ? this.url + '?' + QueryString.stringify(
 					opts) : this.url + '&' + QueryString.stringify(opts);
 			} else if (!util.isNullOrUndefined(opts)) {
 				throw new Error('Please set right options.');
@@ -186,11 +186,15 @@ function APIObject(opts) {
 
 			var opts = null,
 				callback = null,
+				queryString = null,
 				flag = null;
 
 			for (var key in arguments) {
 				if (util.isFunction(arguments[key])) {
 					callback = arguments[key];
+				} else if (util.isObject(arguments[key]) && arguments[key].hasOwnProperty(
+						'queryString')) {
+					queryString = arguments[key].queryString;
 				} else if (util.isObject(arguments[key]) || typeof arguments[key] ===
 					'string') {
 					opts = arguments[key];
@@ -209,16 +213,33 @@ function APIObject(opts) {
 				json: true
 			};
 
+
 			// 带参,是查询字符串
-			if (typeof opts === 'string' && opts.type === APIObject.FORM) {
+			if (typeof queryString === 'string') {
+				// url不能修改，不然对同一个api调用多次会导致url一直变长
+				requestParam.url = this.url.indexOf('?') === -1 ? this.url + '?' +
+					encodeURI(
+						queryString) :
+					this.url + '&' + encodeURI(queryString);
+				// 带参,是请求参数对象
+			} else if (util.isObject(queryString)) {
+				requestParam.url = this.url.indexOf('?') === -1 ? this.url + '?' +
+					QueryString.stringify(
+						queryString) : this.url + '&' + QueryString.stringify(queryString);
+			} else if (!util.isNullOrUndefined(opts)) {
+				throw new Error('Please set right query string parameter.');
+			}
+
+			// 带参,是查询字符串
+			if (typeof opts === 'string' && this.type === APIObject.FORM) {
 				requestParam.json = false;
 				requestParam.form = encodeURI(opts);
 				// 带参,是请求参数对象不是http设置对象
-			} else if (typeof opts === 'string' && opts.type === APIObject.JSON) {
+			} else if (typeof opts === 'string' && this.type === APIObject.JSON) {
 				requestParam.body = JSON.parse(opts);
-			} else if (util.isObject(opts) && opts.type === APIObject.JSON && !flag) {
+			} else if (util.isObject(opts) && this.type === APIObject.JSON && !flag) {
 				requestParam.body = opts;
-			} else if (util.isObject(opts) && opts.type === APIObject.FORM && !flag) {
+			} else if (util.isObject(opts) && this.type === APIObject.FORM && !flag) {
 				requestParam.json = false;
 				requestParam.form = QueryString.stringify(opts);
 			} else if (!util.isNullOrUndefined(opts) && !flag) {
@@ -231,11 +252,11 @@ function APIObject(opts) {
 				request(requestParam, callback);
 			} else if (callback && flag && util.isObject(opts)) {
 				opts.method = APIObject.POST;
-				opts.url = this.url;
+				opts.url = requestParam.url;
 				request(opts, callback);
 			} else if (!callback && flag && util.isObject(opts)) {
 				opts.method = APIObject.POST;
-				opts.url = this.url;
+				opts.url = requestParam.url;
 				return new Promise((resolve, reject) => {
 					request(opts, function (err, resp, body) {
 						var arr = Array.prototype.slice.call(arguments, 0);

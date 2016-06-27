@@ -216,6 +216,31 @@ function parseEventMsg(msg) {
 }
 
 
+function MsgCache() {
+	var self = this instanceof MsgCache ? this : Object.create(MsgCache.prototype);
+	var cache = {};
+
+	if (!util.isFunction(self.addMsg)) {
+		MsgCache.prototype.addMsg = function (id) {
+			cache[id] = 1;
+			setTimeout(() => {
+				delete cache[id];
+			}, 30000);
+		};
+	}
+
+	if (!util.isFunction(self.hasMsg)) {
+		MsgCache.prototype.hasMsg = function (id) {
+			return cache.hasOwnProperty(id);
+		};
+	}
+
+
+	return self;
+}
+
+var msgCache = new MsgCache();
+
 
 function MsgParser() {
 	var self = this instanceof MsgParser ? this : Object.create(MsgParser.prototype);
@@ -227,6 +252,28 @@ function MsgParser() {
 
 
 MsgParser.parse = function (msg) {
+	/* global logger */
+	// 消息去重
+	if (msg.msgId) {
+		if (msgCache.hasMsg(msg.msgId)) {
+			var currentTime = (new Date())
+				.getTime();
+			currentTime = Math.floor(currentTime / 1000);
+			var data = {
+				toUserName: msg.fromUserName,
+				fromUserName: msg.toUserName,
+				createTime: currentTime,
+				msgType: Message.TYPE_TEXT,
+				content: ''
+			};
+			return new Message(data);
+		} else {
+			msgCache.addMsg(msg.msgId);
+		}
+	}
+
+
+
 	switch (msg.msgType) {
 		case Message.TYPE_TEXT:
 			return parseTextMsg(msg);
@@ -246,6 +293,7 @@ MsgParser.parse = function (msg) {
 			return parseEventMsg(msg);
 		default:
 			//log error
+			logger.error(`Invalid message:\n${msg.toXml()}`);
 			break;
 	}
 };

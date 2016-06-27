@@ -18,6 +18,11 @@ var wechatAPIs = {
 	accessToken: {
 		href: 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential',
 		method: 'get'
+	},
+	createMenu: {
+		href: 'https://api.weixin.qq.com/cgi-bin/menu/create',
+		method: 'post',
+		type: 'json'
 	}
 };
 
