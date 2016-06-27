@@ -26,6 +26,7 @@ function checkSign(opts) {
 	return function* parseSignature(next) {
 		/* global wechatInfo */
 		var ctx = this;
+		console.log(ctx.url);
 		if (ctx.method === 'POST') {
 			yield next;
 			return;

@@ -20,6 +20,8 @@ function autoReply(opts) {
 			encoding: ctx.request.charset
 		});
 
+		console.log(body);
+
 		try {
 			var msg = yield Message.parseXml(body);
 		} catch (err) {
