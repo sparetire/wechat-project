@@ -26,11 +26,11 @@ function checkSign(opts) {
 	return function* parseSignature(next) {
 		/* global wechatInfo */
 		var ctx = this;
-		console.log(ctx.url);
 		if (ctx.method === 'POST') {
 			yield next;
 			return;
 		}
+		console.log(`GET: ${ctx.url}`);
 		if (checkSignature(wechatInfo.token, ctx.query)) {
 			ctx.body = ctx.query.echostr;
 		} else {

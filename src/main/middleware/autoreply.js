@@ -17,9 +17,11 @@ function autoReply(opts) {
 		var body = yield getRawBody(ctx.req, {
 			length: ctx.request.length,
 			limit: '1mb',
-			encoding: ctx.request.charset
+			// encoding: ctx.request.charset
+			encoding: 'utf8'
 		});
 
+		console.log(`GET: ${ctx.url}`);
 		console.log(body);
 
 		try {
