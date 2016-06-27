@@ -5,7 +5,7 @@ var wechatConfig = {
 	appSecret: 'feb3737e464b1b34cce8420ea5066538',
 
 	// optional
-	msgEncrypt: true,
+	// msgEncrypt: true,
 	username: ''
 };
 
