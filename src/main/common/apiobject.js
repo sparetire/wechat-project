@@ -40,7 +40,6 @@ function APIObject(opts) {
 		self.url = typeof opts.url === 'string' ? opts.url : '';
 		self.method = typeof opts.method === 'string' ? opts.method.toUpperCase() :
 			APIObject.GET;
-		var temp = URL.parse(self.url);
 		// 忽略POST方法的url的查询字符串
 		// if (self.method === APIObject.POST && !util.isNullStrOrNull(temp.search)) {
 		// 	self.url = self.url.slice(0, self.url.indexOf('?'));
